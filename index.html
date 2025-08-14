@@ -1,0 +1,356 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+  <!--
+    موقع: حمو — واجهة تقنية متحركة بفيزياء وجرافيك، ملف واحد جاهز للرفع.
+    التخصيص السريع:
+      1) بدّل روابط الأزرار تحت قسم .actions
+      2) غيّر عنوان <title> والنصوص
+      3) ألوان العلامة التجارية موجودة في :root
+    ملاحظات أداء:
+      - اضغط Space لتعطيل/تفعيل بعض التأثيرات.
+      - نحترم prefers-reduced-motion لتقليل الحركة تلقائياً.
+  -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#07121b" />
+  <meta name="description" content="واجهة تقنية احترافية باسم حمو مع مؤثرات فيزيائية تفاعلية وأزرار تواصل." />
+  <title> حمو| Hamo</title>
+  <style>
+    :root{
+      /* ألوان البراند */
+      --bg: #060b11;            /* الخلفية العامة */
+      --bg-soft:#0a1620;        /* خلفية ثانوية */
+      --ink:#e9f6ff;            /* نص أساسي فاتح */
+      --muted:#a8c4d6;          /* نص فرعي */
+      --brand:#00ffc6;          /* أكوا-نيون */
+      --brand-2:#4df0ff;        /* سماوي-نيون */
+      --accent:#7a5cff;         /* بنفسجي لطيف */
+      --ring:#00ffc640;         /* توهج */
+      --card:#0c1a26cc;         /* زجاجي */
+      --grid:#0c2c3d;           /* شبكة */
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,"Cairo","Tajawal",Arial,sans-serif;
+      background: var(--bg);
+      color:var(--ink);
+      overflow-x:hidden;
+    }/* خلفية متدرجة + نجوم مطر */
+.bg-grad{ position:fixed; inset:0; z-index:0; pointer-events:none; background:
+  radial-gradient(1200px 600px at 85% -10%, #0c2a41 0%, transparent 60%),
+  radial-gradient(900px 500px at -10% 110%, #0a2522 0%, transparent 65%),
+  var(--bg);
+}
+/* شبكة تقنية */
+.tech-grid::before{ content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.22;
+  background-image: linear-gradient(transparent 95%, var(--grid) 95%), linear-gradient(90deg, transparent 95%, var(--grid) 95%);
+  background-size: 44px 44px, 44px 44px; mix-blend-mode:screen;
+}
+/* سطور مسح رفيعة لإحساس شاشة قديمة */
+.scanlines::after{ content:""; position:fixed; inset:0; z-index:1; pointer-events:none; opacity:.06;
+  background: repeating-linear-gradient(to bottom, #0000, #0000 2px, #000 3px);
+}
+
+/* كانفسين للخلفية والتأثيرات */
+canvas#bgCanvas, canvas#fxCanvas{ position:fixed; inset:0; width:100%; height:100%; z-index:0; display:block }
+
+/* رأس الصفحة */
+header{ position:relative; z-index:2; padding:22px; display:flex; align-items:center; justify-content:space-between }
+.logo{ display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--ink) }
+.logo-mark{ position:relative; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; isolation:isolate; overflow:hidden;
+  background: radial-gradient(circle at 50% 50%, #08141c, #0a1c24); box-shadow: 0 0 0 2px #103040, 0 0 30px 0 var(--ring) inset;
+}
+.logo-mark::before, .logo-mark::after{ content:""; position:absolute; inset:-40%; border-radius:50%;
+  background: conic-gradient(from 0deg,
+    #ff7a00 0 10%, #ffb700 10% 20%, var(--brand) 20% 30%, var(--brand-2) 30% 40%, #0080ff 40% 50%, #7a00ff 50% 60%, #ff007a 60% 70%, transparent 70% 100%);
+  filter: blur(12px) brightness(1.15); opacity:.65; mix-blend-mode:screen; animation:spin 10s linear infinite;
+}
+.logo-mark::after{ animation-direction:reverse; animation-duration:14s; opacity:.35; filter: blur(18px) }
+@keyframes spin{ to{ transform:rotate(1turn) }}
+.logo-text{ font-weight:900; letter-spacing:.3px; font-size:22px }
+.badge{ font-size:12px; color:var(--muted) }
+
+/* بطل الصفحة */
+.hero{ position:relative; z-index:2; padding:24px 22px 60px; display:grid; place-items:center; text-align:center }
+.hero-card{ width:min(1000px, 94vw); background: color-mix(in oklab, var(--card) 92%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+  border:1px solid #123247; border-radius: var(--radius); padding: 34px 22px 30px; box-shadow: 0 10px 45px #0007, 0 0 0 1px #0a2736 inset;
+  overflow:hidden; position:relative;
+}
+.hero h1{ margin:0 0 10px; font-size: clamp(28px, 4.4vw, 50px); line-height:1.12 }
+.hero p{ margin:0; color:var(--muted); font-size: clamp(14px, 1.9vw, 18px) }
+
+/* صورة/عنصر عرض يدخل من اليسار */
+.hero-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: inherit;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateX(-20%);
+  opacity: 0;
+  animation: imgSlideIn .9s cubic-bezier(.2,.7,.1,1) .2s forwards;
+}
+
+@keyframes imgSlideIn {
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+} .2s forwards;
+}
+@keyframes slideIn{ to{ transform: translateX(0); opacity:1 } }
+/* رسومات داخلية بسيطة */
+.hero-visual::before{ content:""; position:absolute; inset:-30% -10% auto auto; height:180%; width:70%;
+  background: radial-gradient(closest-side, rgba(77,240,255,.35), rgba(77,240,255,0) 60%),
+              radial-gradient(closest-side, rgba(0,255,198,.25), rgba(0,255,198,0) 60%);
+  filter: blur(8px);
+}
+
+/* الأزرار */
+.actions{ margin:22px auto 0; display:grid; grid-template-columns: repeat(2, minmax(180px, 1fr)); gap:14px; width:min(800px, 100%) }
+@media (min-width:720px){ .actions{ grid-template-columns: repeat(4, 1fr) } }
+.btn{ position:relative; display:flex; align-items:center; justify-content:center; gap:10px; height:56px; padding:0 16px; border-radius: 16px;
+  background: linear-gradient(180deg, #0e2130, #09202b); border:1px solid #174256; color:var(--ink); text-decoration:none; font-weight:800; letter-spacing:.1px;
+  cursor:pointer; overflow:hidden; transform: translateZ(0); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  box-shadow: 0 10px 25px #0008, 0 0 0 1px #0a2b38 inset; will-change: transform
+}
+.btn:hover{ transform: translateY(-4px); box-shadow: 0 16px 40px #000a, 0 0 0 1px #0f3a4b inset; border-color:#1d566e }
+.btn:active{ transform: translateY(-1px) scale(.99) }
+.btn::before{ content:""; position:absolute; inset:-1px; border-radius: inherit; pointer-events:none;
+  background: conic-gradient(from 0deg, transparent 0 56%, var(--brand) 56% 60%, transparent 60% 100%);
+  filter: blur(10px); opacity:.55; animation: ring-spin 6s linear infinite
+}
+@keyframes ring-spin{ to{ transform: rotate(1turn) } }
+.btn::after{ content:""; position:absolute; inset:1px; border-radius: inherit; pointer-events:none;
+  box-shadow: 0 0 0 1px #1a4253 inset, 0 0 0 2px #0e2b37 inset, 0 16px 30px var(--ring)
+}
+.icon{ width:22px; height:22px; flex:0 0 22px }
+.magnet{ transition: transform .15s ease-out }
+
+/* بطاقة تفاصيل */
+.about{ position:relative; z-index:2; width:min(1000px, 94vw); margin:34px auto 90px; padding:22px; border-radius: var(--radius);
+  border:1px solid #123247; background: color-mix(in oklab, var(--card) 92%, transparent); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px)
+}
+.about h2{ margin:0 0 6px; font-size: clamp(18px, 3.2vw, 26px) }
+.about ul{ margin:10px 0 0 0; padding: 0 18px; color:var(--muted); line-height:1.9 }
+
+footer{ position:relative; z-index:2; color:var(--muted); text-align:center; padding:26px 12px 50px }
+
+/* تلميحة */
+.hint{ position: fixed; top: 14px; left: 14px; z-index: 3; font-size:12px; color:#cfe8f5; opacity:.9; background:#0f2432cc; border:1px solid #123247; border-radius:12px; padding:8px 10px; backdrop-filter: blur(6px) }
+
+/* مراعاة تقليل الحركة */
+@media (prefers-reduced-motion: reduce){
+  .btn, .magnet, .logo-mark::before, .logo-mark::after{ animation:none !important; transition:none !important }
+  .hero-visual{ animation:none; transform:none; opacity:1 }
+}
+
+  </style>
+</head>
+<body>
+  <div class="bg-grad tech-grid scanlines" aria-hidden="true"></div>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <canvas id="fxCanvas" aria-hidden="true"></canvas>  <header>
+    <a class="logo" href="#" aria-label="العودة لأعلى">
+      <span class="logo-mark" aria-hidden="true"></span>
+      <span>
+        <div class="logo-text">حمو</div>
+        <div class="badge"> مالك الموقع المطور | Hamo</div>
+      </span>
+    </a>
+  </header>  <main class="hero">
+    <section class="hero-card">
+      <h1>أهلاً بك في معمل <span style="color:var(--brand)">حمو</span> التقني</h1>
+      <p>تكنولوجيا بنَفَس نيوني: شبكة جسيمات، شهب، أزرار ممغنطة، وتأثير دخول بصري — كله في ملف واحد جاهز.</p>
+      <div class="hero-visual">
+  <img src="hamo.jpg" alt="صورة تقنية" />
+</div>
+      <div class="actions" id="actions">
+        <a class="btn magnet" data-magnet href="https://wa.me/201007671490" target="_blank" rel="noopener" title="تواصل واتساب">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.52 3.48A11.94 11.94 0 0 0 12.06 0C5.46 0 .12 5.34.12 11.94c0 2.1.54 4.14 1.56 5.94L0 24l6.3-1.62a11.9 11.9 0 0 0 5.76 1.47h.06c6.6 0 11.94-5.34 11.94-11.94 0-3.18-1.26-6.18-3.54-8.46ZM12.06 21.6h-.06a9.96 9.96 0 0 1-5.1-1.38l-.36-.18-3.72.96.96-3.6-.24-.36a9.96 9.96 0 1 1 8.52 4.56Zm5.82-7.44c-.3-.18-1.74-.84-2.01-.9-.27-.12-.45-.18-.63.18s-.72.9-.9 1.08c-.18.18-.33.21-.63.06-.3-.18-1.26-.45-2.4-1.5-.9-.78-1.5-1.74-1.68-2.04-.18-.3 0-.48.12-.66.12-.12.3-.36.45-.54.15-.18.21-.3.33-.48.12-.18.06-.36 0-.54-.06-.18-.54-1.53-.75-2.1-.21-.51-.42-.45-.63-.45h-.54c-.18 0-.48.06-.72.36-.24.3-.93.9-.93 2.22 0 1.26.96 2.46 1.11 2.64.15.18 1.92 2.94 4.65 4.14 2.73 1.2 2.73.81 3.21.78.48 0 1.59-.63 1.83-1.26.24-.63.24-1.17.18-1.29-.06-.12-.24-.18-.54-.36Z"/></svg>
+          واتساب
+        </a>
+        <a class="btn magnet" data-magnet href="https://www.instagram.com/7moo_rashad?igsh=MTRjaTVzOHhqZG9odQ==" target="_blank" rel="noopener" title="إنستجرام">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 2C4.24 2 2 4.24 2 7v10c0 2.76 2.24 5 5 5h10c2.76 0 5-2.24 5-5V7c0-2.76-2.24-5-5-5H7zm10 2c1.66 0 3 1.34 3 3v10c0 1.66-1.34 3-3 3H7c-1.66 0-3-1.34-3-3V7c0-1.66 1.34-3 3-3h10zm-5 3.2A5.8 5.8 0 1 0 17.8 13 5.8 5.8 0 0 0 12 7.2zm0 9.5A3.7 3.7 0 1 1 15.7 13 3.7 3.7 0 0 1 12 16.7zM18 6.5a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0z"/></svg>
+          إنستجرام
+        </a>
+        <a class="btn magnet" data-magnet href="https://www.facebook.com/mhmd.rshad.749043?mibextid=ZbWKwL" target="_blank" rel="noopener" title="فيسبوك">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12.07C22 6.48 17.52 2 11.93 2S1.86 6.48 1.86 12.07c0 4.97 3.64 9.1 8.4 9.93v-7.03H7.96v-2.9h2.3v-2.21c0-2.27 1.35-3.53 3.43-3.53.99 0 2.02.18 2.02.18v2.22h-1.14c-1.12 0-1.46.7-1.46 1.42v1.92h2.49l-.4 2.9h-2.09V22c4.76-.83 8.4-4.96 8.4-9.93z"/></svg>
+          فيسبوك
+        </a>
+        <a class="btn magnet" data-magnet href="https://github.com/7amo17" target="_blank" rel="noopener" title="جيت هَب">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.73.5.7 5.52.7 11.79c0 4.95 3.21 9.16 7.66 10.64.56.1.77-.24.77-.54 0-.27-.01-1.15-.02-2.08-3.12.68-3.78-1.33-3.78-1.33-.51-1.29-1.25-1.63-1.25-1.63-1.02-.69.08-.68.08-.68 1.13.08 1.73 1.16 1.73 1.16 1.01 1.73 2.65 1.23 3.3.94.1-.73.4-1.23.72-1.52-2.49-.28-5.11-1.24-5.11-5.53 0-1.22.44-2.23 1.15-3.01-.12-.28-.5-1.43.11-2.98 0 0 .95-.3 3.12 1.15.9-.25 1.88-.38 2.85-.39.97.01 1.96.14 2.86.4 2.16-1.45 3.1-1.15 3.1-1.15.61 1.55.23 2.7.11 2.98.71.78 1.14 1.79 1.14 3.01 0 4.3-2.62 5.24-5.12 5.52.41.35.77 1.03.77 2.07 0 1.49-.01 2.69-.01 3.06 0 .3.2.65.78.54 4.44-1.48 7.65-5.7 7.65-10.64C23.3 5.52 18.27.5 12 .5z"/></svg>
+          جيت هَب
+        </a>
+      </div>
+    </section>
+  </main>  <section class="about">
+    <h2>مطور الموقع | Hamo </h2>
+    <ul>
+      <li> حمو هوه مطور شاب يحب البرمجه <strong>
+        Hamo
+        </strong> مطور بي للغة html.</li>
+      <li> ومطور بي للغة paython.</li>
+      <li>حمو يعشق التقنيه.</li>
+      <li>ويحب ان يتعلم كل ما هوه جديد فيها..</li>
+      <li>هذه تعتبر صفحه بسيط اراد المطور حمو انا يطلقها نبذه عنه .</li>
+      <li>كل ما تريده لا تتاخر في السؤال  <code>انتا عليك تسال </code>وانا عليا اجاوبك</li>
+    </ul>
+  </section>  <footer>
+    © <span id="year"></span> حمو — جميع الحقوق محفوظة.
+  </footer>  <div class="hint">: نورت <kbd>حمو</kbd> ياقلبي🔥 .</div>  <script>
+    // سنة ديناميكية
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // === إعداد الكانفس ===
+    const bg = document.getElementById('bgCanvas');
+    const fx = document.getElementById('fxCanvas');
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    let W, H, ctx, fctx;
+    function resize(){
+      W = bg.width = Math.floor(innerWidth * dpr);
+      H = bg.height = Math.floor(innerHeight * dpr);
+      fx.width = W; fx.height = H;
+      bg.style.width = fx.style.width = innerWidth + 'px';
+      bg.style.height = fx.style.height = innerHeight + 'px';
+      ctx = bg.getContext('2d');
+      fctx = fx.getContext('2d');
+    }
+    resize();
+    addEventListener('resize', resize);
+
+    const TAU = Math.PI * 2;
+    const particles = [];
+    const maxP = 190;       // عدد الجسيمات
+    const linkDist = 138;   // مسافة الربط بين الجسيمات
+    const mouse = {x:-9999, y:-9999};
+
+    function rand(a,b){ return a + Math.random()*(b-a) }
+
+    class P{
+      constructor(){ this.reset(true); }
+      reset(first){
+        this.x = rand(0, W); this.y = rand(0, H);
+        const sp = rand(.12, .6) * dpr;
+        const ang = rand(0, TAU);
+        this.vx = Math.cos(ang)*sp; this.vy = Math.sin(ang)*sp;
+        this.r = rand(1.1, 2.2) * dpr;
+        this.life = first ? rand(0, 600) : 0;
+      }
+      step(){
+        const dx = this.x - mouse.x, dy = this.y - mouse.y;
+        const dist = Math.hypot(dx, dy);
+        if(dist < 170*dpr){
+          const force = (170*dpr - dist) / (170*dpr);
+          this.vx += (dx/(dist||1)) * force * .06;
+          this.vy += (dy/(dist||1)) * force * .06;
+        }
+        this.x += this.vx; this.y += this.vy;
+        if(this.x < 0 || this.x > W) this.vx *= -1, this.x = Math.max(0, Math.min(W, this.x));
+        if(this.y < 0 || this.y > H) this.vy *= -1, this.y = Math.max(0, Math.min(H, this.y));
+        this.vx *= .998; this.vy *= .998;
+      }
+      draw(){
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, TAU);
+        ctx.fillStyle = 'rgba(173, 236, 255, .85)';
+        ctx.fill();
+      }
+    }
+    for(let i=0;i<maxP;i++) particles.push(new P());
+
+    // شهب خفيفة على طبقة fx
+    const comets = Array.from({length: 6}, ()=>({ x: rand(0,W), y: rand(0,H), vx: -rand(.3,1.2)*dpr, vy: rand(.05,.25)*dpr, life: rand(200,600) }));
+
+    let effectsOn = true;
+    addEventListener('keydown', e=>{ if(e.code==='Space'){ effectsOn = !effectsOn; }});
+
+    function loop(){
+      ctx.clearRect(0,0,W,H);
+      fctx.clearRect(0,0,W,H);
+
+      // الجسيمات + الربط
+      for(const p of particles){ p.step(); }
+      for(let i=0;i<particles.length;i++){
+        const a = particles[i]; a.draw();
+        for(let j=i+1;j<particles.length;j++){
+          const b = particles[j];
+          const dx = a.x - b.x, dy = a.y - b.y; const d2 = dx*dx + dy*dy; const d = Math.sqrt(d2);
+          if(d < linkDist*dpr){
+            const alpha = 1 - d/(linkDist*dpr);
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `rgba(77, 240, 255, ${alpha*.35})`;
+            ctx.lineWidth = 1 * dpr; ctx.stroke();
+          }
+        }
+      }
+
+      if(effectsOn){
+        // الشهب
+        fctx.globalCompositeOperation = 'lighter';
+        for(const c of comets){
+          c.x += c.vx; c.y += c.vy; c.life--;
+          fctx.beginPath();
+          const grd = fctx.createLinearGradient(c.x, c.y, c.x-40*dpr, c.y-10*dpr);
+          grd.addColorStop(0,'rgba(0,255,198,.7)');
+          grd.addColorStop(1,'rgba(0,255,198,0)');
+          fctx.strokeStyle = grd; fctx.lineWidth = 2*dpr; fctx.moveTo(c.x, c.y); fctx.lineTo(c.x-60*dpr, c.y-15*dpr); fctx.stroke();
+          if(c.life<=0 || c.x< -100 || c.y> H+100){ c.x = W+rand(0,200); c.y = rand(-50, H*0.7); c.vx = -rand(.3,1.2)*dpr; c.vy = rand(.05,.25)*dpr; c.life = rand(200,600); }
+        }
+        fctx.globalCompositeOperation = 'source-over';
+      }
+
+      requestAnimationFrame(loop);
+    }
+    loop();
+
+    // تتبع الماوس/اللمس
+    function setMouse(e){
+      const rect = bg.getBoundingClientRect();
+      const cx = e.touches? e.touches[0].clientX : e.clientX;
+      const cy = e.touches? e.touches[0].clientY : e.clientY;
+      mouse.x = (cx - rect.left)*dpr; mouse.y = (cy - rect.top)*dpr;
+    }
+    addEventListener('mousemove', setMouse); addEventListener('touchmove', setMouse, {passive:true});
+    addEventListener('mouseleave', ()=>{ mouse.x = -9999; mouse.y = -9999 });
+
+    // === مؤثر مغناطيسي للأزرار + تموج ضغط ===
+    const magnets = document.querySelectorAll('[data-magnet]');
+    magnets.forEach(btn=>{
+      const strength = 14;
+      function onMove(e){
+        const r = btn.getBoundingClientRect();
+        const mx = (e.clientX || (e.touches&&e.touches[0].clientX)) - (r.left + r.width/2);
+        const my = (e.clientY || (e.touches&&e.touches[0].clientY)) - (r.top + r.height/2);
+        btn.style.transform = `translate(${(mx/r.width)*strength}px, ${(my/r.height)*strength}px)`;
+      }
+      function reset(){ btn.style.transform = 'translate(0,0)' }
+      btn.addEventListener('mousemove', onMove);
+      btn.addEventListener('touchmove', onMove);
+      btn.addEventListener('mouseleave', reset);
+      btn.addEventListener('touchend', reset);
+
+      // تموج ضغط
+      btn.addEventListener('click', e=>{
+        const ripple = document.createElement('span');
+        const r = btn.getBoundingClientRect();
+        const x = (e.clientX || (e.touches&&e.touches[0].clientX)) - r.left;
+        const y = (e.clientY || (e.touches&&e.touches[0].clientY)) - r.top;
+        Object.assign(ripple.style,{
+          position:'absolute', left: (x-5)+'px', top:(y-5)+'px', width:'10px', height:'10px', borderRadius:'50%',
+          background:'radial-gradient(circle, rgba(77,240,255,.8), rgba(77,240,255,0))', transform:'scale(1)', opacity:'1', pointerEvents:'none'
+        });
+        btn.appendChild(ripple);
+        let t=0; const anim = ()=>{ t+=.02; ripple.style.transform = `scale(${1+t*22})`; ripple.style.opacity = (1-t).toFixed(2); if(t<1) requestAnimationFrame(anim); else ripple.remove(); };
+        requestAnimationFrame(anim);
+      }, {passive:true});
+    });
+  </script></body>
+</html>
